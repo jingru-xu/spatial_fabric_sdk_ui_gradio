@@ -45,9 +45,31 @@ class SpatialFabricClient:
     封装了Handle SDK和PyGard SDK，提供统一的空间数据管理接口
     """
     
-    def __init__(self, config: Optional[ClientConfig] = None):
-        """初始化空间数据客户端"""
-        self.config = config or ClientConfig()
+    def __init__(self, config: Optional[ClientConfig] = None, 
+                 gard_base_url: Optional[str] = None,
+                 handle_prefix: Optional[str] = None,
+                 **kwargs):
+        """
+        初始化空间数据客户端
+        
+        Args:
+            config: ClientConfig对象，如果提供则忽略其他参数
+            gard_base_url: Gard服务的基础URL
+            handle_prefix: Handle前缀
+            **kwargs: 其他配置参数，会传递给ClientConfig
+        """
+        if config is not None:
+            self.config = config
+        else:
+            # 从参数创建配置
+            config_kwargs = {}
+            if gard_base_url is not None:
+                config_kwargs['gard_base_url'] = gard_base_url
+            if handle_prefix is not None:
+                config_kwargs['handle_prefix'] = handle_prefix
+            config_kwargs.update(kwargs)
+            self.config = ClientConfig(**config_kwargs)
+            
         self._gard_client = None
         self._initialized = False
         self._coroutine_cache = {}  # 添加协程缓存跟踪

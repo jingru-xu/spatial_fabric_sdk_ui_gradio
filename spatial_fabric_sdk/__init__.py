@@ -7,6 +7,7 @@ Spatial Fabric SDK - 空间数据管理统一接口
 from .client import SpatialFabricClient
 from .models import SpatialData, SpatialMetadata, SearchFilter, SearchResult
 from .exceptions import SpatialFabricError, HandleError, GardError, ConfigurationError
+from .config import ClientConfig
 from .gradio_ui import gradio_ui
 
 __version__ = "1.0.0"
@@ -22,5 +23,6 @@ __all__ = [
     "HandleError",
     "GardError",
     "ConfigurationError",
+    "ClientConfig",
     "gradio_ui"
 ] 
