@@ -1,0 +1,28 @@
+# Spatial Fabric SDK 配置文件示例
+
+# Gard 服务配置
+gard:
+  base_url: "https://your-gard-service.com"
+  timeout: 30
+  retry_count: 3
+  
+# Handle 系统配置
+handle:
+  prefix: "86.1009.24"
+  server_url: "https://your-handle-server.com"
+  authentication:
+    enabled: false
+    username: ""
+    password: ""
+    
+# 日志配置
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "spatial_fabric.log"
+  
+# 缓存配置
+cache:
+  enabled: true
+  ttl: 3600  # 秒
+  max_size: 1000 

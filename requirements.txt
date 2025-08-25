@@ -1,0 +1,26 @@
+# Spatial Fabric SDK 依赖包
+
+# 核心依赖
+handle-sdk>=2.0.0
+pygard>=0.1.2
+
+# 异步支持
+aiohttp>=3.8.0
+
+# 数据验证和序列化
+pydantic>=2.0.0
+dataclasses-json>=0.6.0
+
+# 类型提示支持
+typing-extensions>=4.0.0
+
+# UI界面依赖
+gradio>=4.0.0
+pandas>=1.5.0
+
+# 开发依赖（可选）
+# pytest>=6.0
+# pytest-asyncio>=0.18.0
+# black>=21.0
+# flake8>=3.9
+# mypy>=0.910 
