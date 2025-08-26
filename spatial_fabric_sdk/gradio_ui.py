@@ -18,16 +18,7 @@ os.environ['HANDLE_TLS_INSECURE'] = 'true'  # 禁用Handle SDK的SSL验证
 os.environ['PYTHONHTTPSVERIFY'] = '0'       # 禁用Python的HTTPS验证
 
 import gradio as gr
-import json
-import webbrowser
-import threading
-import time
-import subprocess
-import sys
 from typing import Optional, Dict, Any, List
-from datetime import datetime
-import pandas as pd
-import asyncio
 
 # 修复Gradio环境中的事件循环问题
 try:
@@ -96,6 +87,16 @@ class SpatialFabricGradioUI:
         except Exception:
             # 忽略不可用场景
             pass
+
+    def _error(self, message: str) -> Dict[str, str]:
+        """统一的错误返回结构。"""
+        return {"error": message}
+
+    def _split_tags(self, raw: str) -> List[str]:
+        """将逗号分隔的标签字符串规范化为列表。"""
+        if not raw:
+            return []
+        return [tag.strip() for tag in raw.split(",") if tag.strip()]
         
     def create_interface(self):
         """创建Gradio界面"""
@@ -552,7 +553,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not handle_id:
-                return {"error": "请输入Handle ID"}
+                return self._error("请输入Handle ID")
             
             # 同步调用
             result = self.client.parse_spatial_handle_sync(handle_id)
@@ -570,7 +571,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not field or not value:
-                return {"error": "请输入搜索字段和值"}
+                return self._error("请输入搜索字段和值")
             
             # 同步调用
             result = self.client.search_handles_sync([field], [value], [operator])
@@ -596,7 +597,7 @@ class SpatialFabricGradioUI:
             metadata = SpatialMetadata(
                 name=name,
                 description=description,
-                tags=[tag.strip() for tag in tags.split(",") if tag.strip()],
+                tags=self._split_tags(tags),
                 type=data_type,
                 is_spatial=True,
                 is_temporal=False
@@ -691,7 +692,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return {"error": "请输入数据ID"}
+                return self._error("请输入数据ID")
             
             # 同步调用
             result = self.client.get_spatial_data_sync(data_id)
@@ -721,7 +722,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return {"error": "请输入数据ID"}
+                return self._error("请输入数据ID")
             
             # 同步调用
             result = self.client.get_spatial_data_sync(data_id)
@@ -751,7 +752,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return {"error": "请输入数据ID"}
+                return self._error("请输入数据ID")
             
             # 创建更新的元数据
             metadata = SpatialMetadata(
@@ -814,9 +815,9 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not tags:
-                return {"error": "请输入标签"}
+                return self._error("请输入标签")
             
-            tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
+            tag_list = self._split_tags(tags)
             
             # 同步调用
             result = self.client.search_by_tags_sync(tag_list)
@@ -842,7 +843,7 @@ class SpatialFabricGradioUI:
             search_criteria = {}
             
             if tags:
-                search_criteria["tags"] = [tag.strip() for tag in tags.split(",") if tag.strip()]
+                search_criteria["tags"] = self._split_tags(tags)
             
             if keywords:
                 search_criteria["keywords"] = [kw.strip() for kw in keywords.split(",") if kw.strip()]
