@@ -17,6 +17,7 @@ typing-extensions>=4.0.0
 # UI界面依赖
 gradio>=4.0.0
 pandas>=1.5.0
+nest-asyncio>=1.5.6
 
 # 开发依赖（可选）
 # pytest>=6.0
