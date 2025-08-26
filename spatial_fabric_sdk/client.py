@@ -565,6 +565,14 @@ class SpatialFabricClient:
             
         except Exception as e:
             raise HandleError(f"注册Handle失败: {e}")
+
+    # New API name (no back-compat required going forward)
+    def register_handle_sync(self,
+                             handle_id: str,
+                             target_url: str,
+                             metadata: Union[SpatialMetadata, Dict[str, Any]]) -> Dict[str, Any]:
+        """Register handle with storage descriptor injected when available."""
+        return self.register_spatial_handle_sync(handle_id, target_url, metadata)
     
     async def parse_spatial_handle(self, handle_id: str) -> Dict[str, Any]:
         """
@@ -604,6 +612,11 @@ class SpatialFabricClient:
             return result
         except Exception as e:
             raise HandleError(f"解析Handle失败: {e}")
+
+    # New API name (resolve)
+    def resolve_handle_sync(self, handle_id: str) -> Dict[str, Any]:
+        """Resolve handle and enrich with preferred_access_url when present."""
+        return self.parse_spatial_handle_sync(handle_id)
     
     async def search_handles(self, 
                            fields: List[str], 
@@ -647,8 +660,28 @@ class SpatialFabricClient:
                            fields: List[str], 
                            values: List[str], 
                            operators: List[str]) -> List[Dict[str, Any]]:
-        """同步版本的搜索Handle"""
+        """Deprecated: use search_handles_by_filters_sync instead."""
         return self._run_coroutine_safely(self.search_handles, fields, values, operators)
+
+    # New API: filters-based
+    def search_handles_by_filters_sync(self, filters: Dict[str, Any], limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+        return self._run_coroutine_safely(self.search_handles_by_filters_async, filters, limit, offset)
+
+    async def search_handles_by_filters_async(self, filters: Dict[str, Any], limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
+        if not HANDLE_SDK_AVAILABLE:
+            raise HandleError("handle_sdk 未安装，无法使用搜索Handle功能。请先安装: pip install handle_sdk-2.0.0-py3-none-any.whl")
+        self._ensure_ssl_certificates()
+        try:
+            from handle_sdk import search_handles
+        except Exception:
+            return []
+        # 将 filters 映射到原API（简单适配）
+        fields, values, operators = [], [], []
+        for k, v in (filters or {}).items():
+            fields.append(k)
+            values.append(str(v))
+            operators.append("contains")
+        return search_handles(fields, values, operators)
     
     # ==================== Gard 相关操作 ====================
     
