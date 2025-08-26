@@ -1,0 +1,26 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Local wheels
+*.whl
+
+# Virtual envs
+.venv/
+venv/
+
+# OS files
+.DS_Store
+
+# Gradio temp
+*.gradio*
+
+# Cursor rules caches (if any)
+.cursor/*.cache

@@ -1,0 +1,15 @@
+---
+globs: *.py
+description: Python coding conventions for this repo
+---
+### Python Coding Conventions
+
+- Use explicit, descriptive names. Avoid 1–2 letter identifiers.
+- Prefer guard clauses and early returns; keep nesting shallow.
+- Do not swallow exceptions; include actionable messages.
+- Keep comments minimal; explain "why" for non-obvious logic.
+- Match existing formatting in files; avoid unrelated reformatting.
+- Type hints for public APIs and class methods where practical.
+- Avoid creating global state; prefer instance attributes.
+- For async usage, prefer sync wrappers like `*_sync` where UI requires synchronous calls.
+- When editing, ensure no linter errors are introduced.

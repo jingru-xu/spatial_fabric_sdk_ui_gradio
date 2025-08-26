@@ -1,0 +1,12 @@
+---
+description: Packaging, local wheels, and installation guidance
+---
+### Packaging and Installation
+
+- Local dependencies provided as wheels: [handle_sdk-2.0.0-py3-none-any.whl](mdc:handle_sdk-2.0.0-py3-none-any.whl), [pygard-0.1.2-py3-none-any.whl](mdc:pygard-0.1.2-py3-none-any.whl).
+- Install order:
+  1) `pip install handle_sdk-2.0.0-py3-none-any.whl pygard-0.1.2-py3-none-any.whl`
+  2) `pip install -e .` (or use [dist/](mdc:dist) artifacts)
+  3) For UI, `pip install gradio pandas`
+- Main distribution artifacts in [dist/](mdc:dist).
+- Use [BUILD.md](mdc:BUILD.md) for build steps and [requirements.txt](mdc:requirements.txt) for base deps.

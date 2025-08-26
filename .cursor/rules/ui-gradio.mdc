@@ -1,0 +1,15 @@
+---
+description: Guidance for Gradio UI usage, entrypoints, and workflows
+---
+### Gradio UI Usage and Workflows
+
+- Launch UI via `sf.gradio_ui()` or `python run_gradio_ui.py`.
+- Public link support is enabled by `share=True` in `SpatialFabricGradioUI.launch`.
+- Use `spatial_fabric_sdk/gradio_ui.py` as the single source of truth for UI composition:
+  - The class `SpatialFabricGradioUI` builds tabs for Handle, Spatial Data, Search, and Data View.
+  - Buttons are bound to synchronous client wrappers (e.g., `*_sync`).
+- If you add new UI tabs or buttons:
+  - Define a `_create_<feature>_tab` method in `gradio_ui.py`.
+  - Bind handlers to `SpatialFabricClient` sync methods.
+  - Keep handlers defensive: check `self.initialized` before calls.
+- Prefer using `nest_asyncio.apply()` if adding async code in Gradio callbacks.

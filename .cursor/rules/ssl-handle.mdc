@@ -1,0 +1,13 @@
+---
+description: SSL/cert handling and Handle SDK fixes ordering
+---
+### SSL and Handle Fixes — Ordering Requirements
+
+- In `spatial_fabric_sdk/gradio_ui.py`, apply SSL fixes BEFORE other imports:
+  1) `from .ssl_fix import apply_ssl_fix` then `apply_ssl_fix("gradio_ui")`
+  2) `from .handle_ssl_fix import apply_comprehensive_handle_ssl_fix` then call it
+  3) Set env vars: `HANDLE_TLS_INSECURE=true`, `PYTHONHTTPSVERIFY=0`
+- Initialize certificates early via `certificate_manager.initialize_certificates()` and log status.
+- For operations that use Handle SDK, re-apply comprehensive handle SSL fix inside handlers if needed.
+- When encountering event-loop issues, prefer `nest_asyncio.apply()` and retry once.
+- Do not import network libraries that may trigger SSL before fixes are applied.

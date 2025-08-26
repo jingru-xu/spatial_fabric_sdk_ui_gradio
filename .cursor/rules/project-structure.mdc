@@ -1,0 +1,33 @@
+---
+alwaysApply: true
+---
+### Spatial Fabric SDK UI — Project Structure
+
+- Main UI entrypoints:
+  - [run_gradio_ui.py](mdc:run_gradio_ui.py)
+  - [spatial_fabric_sdk/launch_gradio_ui.py](mdc:spatial_fabric_sdk/launch_gradio_ui.py)
+  - UI function exported in [spatial_fabric_sdk/gradio_ui.py](mdc:spatial_fabric_sdk/gradio_ui.py) via `gradio_ui()`
+
+- Core SDK package:
+  - [spatial_fabric_sdk/](mdc:spatial_fabric_sdk)
+    - Client and models: [client.py](mdc:spatial_fabric_sdk/client.py), [models.py](mdc:spatial_fabric_sdk/models.py)
+    - SSL/Handle fixes: [ssl_fix.py](mdc:spatial_fabric_sdk/ssl_fix.py), [handle_ssl_fix.py](mdc:spatial_fabric_sdk/handle_ssl_fix.py)
+    - Certs: [certificate_manager.py](mdc:spatial_fabric_sdk/certificate_manager.py)
+    - Config: [config.py](mdc:spatial_fabric_sdk/config.py)
+
+- Configuration:
+  - Default config in [config/config.yaml](mdc:config/config.yaml)
+
+- Documentation and guides:
+  - [README.md](mdc:README.md) — features and quickstart
+  - [UI_README.md](mdc:UI_README.md) — UI usage
+  - [API_QUICK_REFERENCE.md](mdc:API_QUICK_REFERENCE.md)
+  - [USER_MANUAL.md](mdc:USER_MANUAL.md)
+
+- Examples and tests:
+  - [examples/](mdc:examples)
+  - [tests/](mdc:tests)
+
+Notes
+- UI startup applies SSL fixes and certificate initialization early in `gradio_ui.py` before other imports.
+- Public link support is enabled by passing `share=True` to Gradio in `SpatialFabricGradioUI.launch`.

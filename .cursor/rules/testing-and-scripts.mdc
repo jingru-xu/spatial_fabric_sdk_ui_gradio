@@ -1,0 +1,9 @@
+---
+description: Testing guidance and helper scripts
+---
+### Testing and Scripts
+
+- Tests live under [tests/](mdc:tests). Use `pytest -q` to run.
+- UI-related flows are best validated via manual run of `run_gradio_ui.py`.
+- For coroutine/SSL behavior, see `test_coroutine_fix.py` and `test_ssl_fix.py` for patterns.
+- Prefer deterministic, sync wrappers in tests; avoid relying on public link generation.
