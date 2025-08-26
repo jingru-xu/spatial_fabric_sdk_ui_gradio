@@ -248,11 +248,12 @@ class SpatialFabricGradioUI:
                 parse_btn = gr.Button("🔍 解析")
                 parse_output = gr.JSON(label="解析结果")
                 preferred_url_output = gr.Textbox(label="首选访问URL (如可用)", interactive=False)
+                locations_output = gr.Dataframe(headers=["type","url","region","access_method","content_type","size","checksum"], label="存储副本 (如有)", interactive=False)
                 
                 parse_btn.click(
                     fn=self._parse_handle,
                     inputs=parse_handle_id,
-                    outputs=[parse_output, preferred_url_output]
+                    outputs=[parse_output, preferred_url_output, locations_output]
                 )
             
             # 搜索Handle
@@ -580,7 +581,7 @@ class SpatialFabricGradioUI:
             else:
                 return {"error": f"注册失败: {error_msg}"}
     
-    def _parse_handle(self, handle_id: str) -> Tuple[Dict[str, Any], str]:
+    def _parse_handle(self, handle_id: str) -> Tuple[Dict[str, Any], str, List[List[Any]]]:
         """解析Handle"""
         try:
             not_ready = self._ensure_initialized()
@@ -593,12 +594,24 @@ class SpatialFabricGradioUI:
             # 同步调用
             result = self.client.resolve_handle_sync(handle_id)
             preferred = ""
+            locations_table: List[List[Any]] = []
             try:
                 preferred = result.get("preferred_access_url", "")
                 if not preferred:
                     sd = result.get("storage_descriptor") or result.get("metadata", {}).get("storage_descriptor")
                     if sd:
                         locs = sd.get("storage") or []
+                        # 构建副本表
+                        for loc in locs:
+                            locations_table.append([
+                                loc.get("type"),
+                                loc.get("url"),
+                                loc.get("region"),
+                                loc.get("access_method"),
+                                loc.get("content_type"),
+                                loc.get("size"),
+                                loc.get("checksum")
+                            ])
                         if sd.get("preferred"):
                             for loc in locs:
                                 if loc.get("type") == sd.get("preferred") and loc.get("url"):
@@ -611,11 +624,12 @@ class SpatialFabricGradioUI:
                                     break
             except Exception:
                 preferred = ""
+                locations_table = []
             
-            return ({"success": True, "result": result}, preferred)
+            return ({"success": True, "result": result}, preferred, locations_table)
             
         except Exception as e:
-            return {"error": f"解析失败: {str(e)}"}, ""
+            return {"error": f"解析失败: {str(e)}"}, "", []
     
     def _search_handles(self, field: str, value: str, operator: str) -> Dict[str, Any]:
         """搜索Handle"""
