@@ -15,42 +15,45 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# 默认常量
+DEFAULT_SEARCH_PATHS: List[str] = [
+    ".",  # 当前目录
+    "certs",
+    "certificates",
+    "ssl",
+    "../certs",
+    "../certificates",
+    os.path.expanduser("~/certs"),
+    os.path.expanduser("~/certificates"),
+    "/home/mw/project",
+    os.path.join(os.getcwd(), ".."),
+]
+
+CERT_EXTENSIONS: List[str] = ["*.crt", "*.pem", "*.cer", "*.p12", "*.jks", "*.keystore"]
+
 
 class CertificateManager:
     """SSL证书管理器"""
     
     def __init__(self):
-        self.cert_paths = []
-        self.java_env_vars = {}
-        self.ssl_context = None
-        self.initialized = False
+        self.cert_paths: List[Path] = []
+        self.java_env_vars: Dict[str, str] = {}
+        self.ssl_context: Optional[ssl.SSLContext] = None
+        self.initialized: bool = False
         
     def find_certificates(self, search_paths: Optional[List[str]] = None) -> List[Path]:
         """查找证书文件"""
         if search_paths is None:
-            # 默认搜索路径
-            search_paths = [
-                ".",  # 当前目录
-                "certs",  # certs子目录
-                "certificates",  # certificates子目录
-                "ssl",  # ssl子目录
-                "../certs",  # 上级目录的certs
-                "../certificates",  # 上级目录的certificates
-                os.path.expanduser("~/certs"),  # 用户主目录下的certs
-                os.path.expanduser("~/certificates"),  # 用户主目录下的certificates
-                "/home/mw/project",  # 项目根目录
-                os.path.join(os.getcwd(), ".."),  # 上级目录
-            ]
+            search_paths = DEFAULT_SEARCH_PATHS
         
-        cert_files = []
-        cert_extensions = ['*.crt', '*.pem', '*.cer', '*.p12', '*.jks', '*.keystore']
+        cert_files: List[Path] = []
         
         for search_path in search_paths:
             if not os.path.exists(search_path):
                 continue
                 
             search_dir = Path(search_path)
-            for ext in cert_extensions:
+            for ext in CERT_EXTENSIONS:
                 try:
                     found_files = list(search_dir.glob(ext))
                     cert_files.extend(found_files)
@@ -59,8 +62,14 @@ class CertificateManager:
                 except Exception as e:
                     logger.warning(f"搜索 {search_path} 中的 {ext} 文件时出错: {e}")
         
-        # 去重并返回
-        unique_certs = list(set(cert_files))
+        # 去重并保持顺序
+        seen: set = set()
+        unique_certs: List[Path] = []
+        for f in cert_files:
+            fp = f.resolve()
+            if fp not in seen:
+                seen.add(fp)
+                unique_certs.append(f)
         logger.info(f"总共找到 {len(unique_certs)} 个证书文件")
         return unique_certs
     
@@ -113,10 +122,10 @@ class CertificateManager:
             
             try:
                 # 创建SSL上下文并加载证书
-                ssl_context = ssl.create_default_context()
-                ssl_context.load_verify_locations(cafile=cert_path)
-                ssl._create_default_https_context = lambda: ssl_context
-                self.ssl_context = ssl_context
+                ctx: ssl.SSLContext = ssl.create_default_context()
+                ctx.load_verify_locations(cafile=cert_path)
+                ssl._create_default_https_context = lambda: ctx
+                self.ssl_context = ctx
                 logger.info(f"✅ 成功加载SSL证书: {cert_path}")
             except Exception as e:
                 logger.warning(f"⚠️ 证书加载失败，使用不验证模式: {e}")
