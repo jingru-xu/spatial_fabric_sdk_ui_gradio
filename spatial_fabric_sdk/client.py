@@ -76,6 +76,28 @@ class SpatialFabricClient:
         self._coroutine_cache = {}  # 添加协程缓存跟踪
         self._last_reset_time = time.time()  # 添加重置时间跟踪
         self._reset_threshold = 60  # 60秒后强制重置
+
+    # -------------------- 内部辅助：解析 Handle 返回中的首选访问 URL --------------------
+    @staticmethod
+    def _extract_preferred_access_url(parsed_handle: Dict[str, Any]) -> Optional[str]:
+        """从handle解析结果中提取首选访问URL（若包含storage_descriptor）。"""
+        try:
+            sd = parsed_handle.get('storage_descriptor') or parsed_handle.get('metadata', {}).get('storage_descriptor')
+            if not sd:
+                return None
+            preferred_type = sd.get('preferred')
+            locations = sd.get('storage') or []
+            if preferred_type:
+                for loc in locations:
+                    if loc.get('type') == preferred_type and loc.get('url'):
+                        return loc['url']
+            # 退化策略：返回第一个有url的
+            for loc in locations:
+                if loc.get('url'):
+                    return loc['url']
+        except Exception:
+            return None
+        return None
         
     async def initialize(self):
         """异步初始化客户端"""
@@ -559,6 +581,10 @@ class SpatialFabricClient:
         
         try:
             result = parse_handle(handle_id)
+            # 增强：补充首选访问URL（若可用）
+            preferred = self._extract_preferred_access_url(result)
+            if preferred and 'preferred_access_url' not in result:
+                result['preferred_access_url'] = preferred
             return result
         except Exception as e:
             raise HandleError(f"解析Handle失败: {e}")
@@ -572,6 +598,9 @@ class SpatialFabricClient:
             # 确保SSL证书配置已应用
             self._ensure_ssl_certificates()
             result = parse_handle(handle_id)
+            preferred = self._extract_preferred_access_url(result)
+            if preferred and 'preferred_access_url' not in result:
+                result['preferred_access_url'] = preferred
             return result
         except Exception as e:
             raise HandleError(f"解析Handle失败: {e}")
