@@ -52,6 +52,8 @@ class SpatialFabricGradioUI:
         self.initialized = False
         self.DEFAULT_GARD_URL = "https://your-gard-service.com"
         self.DEFAULT_HANDLE_PREFIX = "86.1009.24"
+        self.DEFAULT_PORT_START = 7860
+        self.DEFAULT_PORT_MAX = 7870
         self.gard_url = self.DEFAULT_GARD_URL
         self.handle_prefix = self.DEFAULT_HANDLE_PREFIX
         
@@ -106,6 +108,12 @@ class SpatialFabricGradioUI:
         if not raw:
             return []
         return [tag.strip() for tag in raw.split(",") if tag.strip()]
+
+    def _split_csv(self, raw: str) -> List[str]:
+        """通用的逗号分隔字符串拆分。"""
+        if not raw:
+            return []
+        return [v.strip() for v in raw.split(",") if v.strip()]
 
     def _require_nonempty(self, value: Optional[str], message: str) -> Optional[Dict[str, str]]:
         """当字符串为空或None时返回统一错误结构。"""
@@ -872,7 +880,7 @@ class SpatialFabricGradioUI:
                 search_criteria["tags"] = self._split_tags(tags)
             
             if keywords:
-                search_criteria["keywords"] = [kw.strip() for kw in keywords.split(",") if kw.strip()]
+                search_criteria["keywords"] = self._split_csv(keywords)
             
             if data_type and data_type != "全部":
                 search_criteria["type"] = data_type
@@ -900,8 +908,8 @@ class SpatialFabricGradioUI:
         # 如果没有指定端口，尝试从7860开始找可用端口
         if server_port is None:
             import socket
-            server_port = 7860
-            while server_port < 7870:  # 尝试7860-7869端口
+            server_port = self.DEFAULT_PORT_START
+            while server_port < self.DEFAULT_PORT_MAX:  # 尝试7860-7869端口
                 try:
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.bind(('localhost', server_port))
