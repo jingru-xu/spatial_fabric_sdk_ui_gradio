@@ -4,6 +4,7 @@ Spatial Fabric SDK 主客户端
 
 import asyncio
 from typing import Dict, Any, Optional, List, Union
+from dataclasses import asdict
 from datetime import datetime
 import time # Added for time-based reset
 
@@ -487,6 +488,13 @@ class SpatialFabricClient:
                     'created_at': metadata.created_at.isoformat() if metadata.created_at else None,
                     **metadata.custom_fields
                 }
+                # 注入非敏感的存储描述到Handle元数据（如存在）
+                if getattr(metadata, 'storage_descriptor', None) is not None:
+                    try:
+                        handle_metadata['storage_descriptor'] = asdict(metadata.storage_descriptor)
+                    except Exception:
+                        # 兜底：若序列化失败则忽略
+                        pass
             else:
                 handle_metadata = metadata
             
@@ -521,6 +529,11 @@ class SpatialFabricClient:
                     'created_at': metadata.created_at.isoformat() if metadata.created_at else None,
                     **metadata.custom_fields
                 }
+                if getattr(metadata, 'storage_descriptor', None) is not None:
+                    try:
+                        handle_metadata['storage_descriptor'] = asdict(metadata.storage_descriptor)
+                    except Exception:
+                        pass
             else:
                 handle_metadata = metadata
             
