@@ -512,10 +512,11 @@ class SpatialFabricClient:
                 }
                 # 注入非敏感的存储描述到Handle元数据（如存在）
                 if getattr(metadata, 'storage_descriptor', None) is not None:
+                    sd = metadata.storage_descriptor
                     try:
-                        handle_metadata['storage_descriptor'] = asdict(metadata.storage_descriptor)
+                        # 支持dataclass或原始dict
+                        handle_metadata['storage_descriptor'] = asdict(sd) if hasattr(sd, '__dataclass_fields__') else sd
                     except Exception:
-                        # 兜底：若序列化失败则忽略
                         pass
             else:
                 handle_metadata = metadata
@@ -552,8 +553,9 @@ class SpatialFabricClient:
                     **metadata.custom_fields
                 }
                 if getattr(metadata, 'storage_descriptor', None) is not None:
+                    sd = metadata.storage_descriptor
                     try:
-                        handle_metadata['storage_descriptor'] = asdict(metadata.storage_descriptor)
+                        handle_metadata['storage_descriptor'] = asdict(sd) if hasattr(sd, '__dataclass_fields__') else sd
                     except Exception:
                         pass
             else:
