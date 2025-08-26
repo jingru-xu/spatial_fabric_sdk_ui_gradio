@@ -50,8 +50,10 @@ class SpatialFabricGradioUI:
     def __init__(self):
         self.client: Optional[SpatialFabricClient] = None
         self.initialized = False
-        self.gard_url = "https://your-gard-service.com"
-        self.handle_prefix = "86.1009.24"
+        self.DEFAULT_GARD_URL = "https://your-gard-service.com"
+        self.DEFAULT_HANDLE_PREFIX = "86.1009.24"
+        self.gard_url = self.DEFAULT_GARD_URL
+        self.handle_prefix = self.DEFAULT_HANDLE_PREFIX
         
         # 内部状态：确保只应用一次的修复
         self._nest_asyncio_applied: bool = True  # 顶部已尝试应用
@@ -104,6 +106,23 @@ class SpatialFabricGradioUI:
         if not raw:
             return []
         return [tag.strip() for tag in raw.split(",") if tag.strip()]
+
+    def _require_nonempty(self, value: Optional[str], message: str) -> Optional[Dict[str, str]]:
+        """当字符串为空或None时返回统一错误结构。"""
+        if value is None or (isinstance(value, str) and value.strip() == ""):
+            return self._error(message)
+        return None
+
+    def _build_metadata(self, name: str, description: str, tags: str, data_type: str, is_spatial: bool, is_temporal: bool) -> SpatialMetadata:
+        """构建统一的 SpatialMetadata。"""
+        return SpatialMetadata(
+            name=name,
+            description=description,
+            tags=self._split_tags(tags),
+            type=data_type,
+            is_spatial=is_spatial,
+            is_temporal=is_temporal
+        )
         
     def create_interface(self):
         """创建Gradio界面"""
@@ -601,11 +620,11 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             # 创建元数据
-            metadata = SpatialMetadata(
+            metadata = self._build_metadata(
                 name=name,
                 description=description,
-                tags=self._split_tags(tags),
-                type=data_type,
+                tags=tags,
+                data_type=data_type,
                 is_spatial=True,
                 is_temporal=False
             )
@@ -762,11 +781,11 @@ class SpatialFabricGradioUI:
                 return self._error(self._ERR_ENTER_ID)
             
             # 创建更新的元数据
-            metadata = SpatialMetadata(
+            metadata = self._build_metadata(
                 name=name,
                 description=description,
-                tags=self._split_tags(tags),
-                type=data_type,
+                tags=tags,
+                data_type=data_type,
                 is_spatial=True,
                 is_temporal=False
             )
