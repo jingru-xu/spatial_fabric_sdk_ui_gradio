@@ -62,6 +62,41 @@ class SpatialFabricGradioUI:
         self.gard_url = "https://your-gard-service.com"
         self.handle_prefix = "86.1009.24"
         
+        # 内部状态：确保只应用一次的修复
+        self._nest_asyncio_applied: bool = True  # 顶部已尝试应用
+    
+    # ---------------------- 内部辅助方法（不改变核心业务逻辑） ----------------------
+    def _apply_handle_ssl_env(self) -> None:
+        """为Handle相关操作应用SSL修复和必要环境变量。"""
+        try:
+            from .handle_ssl_fix import apply_comprehensive_handle_ssl_fix
+            apply_comprehensive_handle_ssl_fix()
+        except Exception as _:
+            pass
+        try:
+            os.environ['HANDLE_TLS_INSECURE'] = 'true'
+            os.environ['PYTHONHTTPSVERIFY'] = '0'
+        except Exception as _:
+            pass
+    
+    def _ensure_initialized(self) -> Optional[Dict[str, Any]]:
+        """统一的初始化校验，未初始化则返回错误结构。"""
+        if not self.initialized or not self.client:
+            return {"error": "客户端未初始化，请先初始化客户端"}
+        return None
+    
+    def _apply_nest_asyncio_once(self) -> None:
+        """在需要时再次尝试应用 nest_asyncio（只做轻量尝试）。"""
+        if self._nest_asyncio_applied:
+            return
+        try:
+            import nest_asyncio  # type: ignore
+            nest_asyncio.apply()
+            self._nest_asyncio_applied = True
+        except Exception:
+            # 忽略不可用场景
+            pass
+        
     def create_interface(self):
         """创建Gradio界面"""
         with gr.Blocks(
@@ -382,8 +417,7 @@ class SpatialFabricGradioUI:
                 if "Event loop is closed" in error_msg or "loop" in error_msg.lower():
                     # 尝试修复事件循环问题
                     try:
-                        import nest_asyncio
-                        nest_asyncio.apply()
+                        self._apply_nest_asyncio_once()
                         
                         # 重新尝试初始化
                         self.client.initialize_sync()
@@ -451,19 +485,13 @@ class SpatialFabricGradioUI:
     def _register_handle(self, handle_id, target_url, name, description, tags, data_type, is_spatial, is_temporal):
         """注册Handle"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             # 在注册前重新应用Handle SDK SSL修复
             try:
-                from .handle_ssl_fix import apply_comprehensive_handle_ssl_fix
-                apply_comprehensive_handle_ssl_fix()
-                
-                # 确保环境变量设置正确
-                import os
-                os.environ['HANDLE_TLS_INSECURE'] = 'true'
-                os.environ['PYTHONHTTPSVERIFY'] = '0'
-                
+                self._apply_handle_ssl_env()
                 print(f"🔧 已重新应用Handle SDK全面SSL修复")
             except Exception as ssl_error:
                 print(f"⚠️ SSL修复应用失败: {ssl_error}")
@@ -519,8 +547,9 @@ class SpatialFabricGradioUI:
     def _parse_handle(self, handle_id):
         """解析Handle"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not handle_id:
                 return {"error": "请输入Handle ID"}
@@ -536,8 +565,9 @@ class SpatialFabricGradioUI:
     def _search_handles(self, field, value, operator):
         """搜索Handle"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not field or not value:
                 return {"error": "请输入搜索字段和值"}
@@ -558,8 +588,9 @@ class SpatialFabricGradioUI:
     def _create_spatial_data(self, name, description, tags, data_type, min_lat, max_lat, min_lon, max_lon, crs, data_url):
         """创建空间数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             # 创建元数据
             metadata = SpatialMetadata(
@@ -599,8 +630,7 @@ class SpatialFabricGradioUI:
                 if "Event loop is closed" in error_msg or "loop" in error_msg.lower():
                     # 尝试修复事件循环问题
                     try:
-                        import nest_asyncio
-                        nest_asyncio.apply()
+                        self._apply_nest_asyncio_once()
                         
                         # 重新尝试创建 - 使用不同的方法避免协程重用
                         try:
@@ -656,8 +686,9 @@ class SpatialFabricGradioUI:
     def _read_spatial_data(self, data_id):
         """读取空间数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not data_id:
                 return {"error": "请输入数据ID"}
@@ -685,8 +716,9 @@ class SpatialFabricGradioUI:
     def _find_data_for_update(self, data_id):
         """查找要更新的数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not data_id:
                 return {"error": "请输入数据ID"}
@@ -714,8 +746,9 @@ class SpatialFabricGradioUI:
     def _update_spatial_data(self, data_id, name, description, tags, data_type, min_lat, max_lat, min_lon, max_lon, crs, data_url):
         """更新空间数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not data_id:
                 return {"error": "请输入数据ID"}
@@ -758,8 +791,9 @@ class SpatialFabricGradioUI:
     def _delete_spatial_data(self, data_id):
         """删除空间数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not data_id:
                 return {"error": "请输入数据ID"}
@@ -775,8 +809,9 @@ class SpatialFabricGradioUI:
     def _search_by_tags(self, tags):
         """根据标签搜索数据"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             if not tags:
                 return {"error": "请输入标签"}
@@ -799,8 +834,9 @@ class SpatialFabricGradioUI:
     def _advanced_search(self, tags, keywords, data_type, min_lat, max_lat, min_lon, max_lon):
         """高级搜索"""
         try:
-            if not self.initialized or not self.client:
-                return {"error": "客户端未初始化，请先初始化客户端"}
+            not_ready = self._ensure_initialized()
+            if not_ready:
+                return not_ready
             
             # 构建搜索条件
             search_criteria = {}
