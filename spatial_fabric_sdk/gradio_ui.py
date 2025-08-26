@@ -546,7 +546,7 @@ class SpatialFabricGradioUI:
             print(f"🏷️ 元数据: {metadata.name} - {metadata.description}")
             
             # 同步调用
-            result = self.client.register_spatial_handle_sync(handle_id, target_url, metadata)
+            result = self.client.register_handle_sync(handle_id, target_url, metadata)
             
             print(f"✅ Handle注册成功: {handle_id}")
             return {"success": True, "result": result}
@@ -590,7 +590,7 @@ class SpatialFabricGradioUI:
                 return self._error(self._ERR_ENTER_HANDLE)
             
             # 同步调用
-            result = self.client.parse_spatial_handle_sync(handle_id)
+            result = self.client.resolve_handle_sync(handle_id)
             
             return {"success": True, "result": result}
             
@@ -607,8 +607,9 @@ class SpatialFabricGradioUI:
             if not field or not value:
                 return self._error(self._ERR_ENTER_FIELD_VALUE)
             
-            # 同步调用
-            result = self.client.search_handles_sync([field], [value], [operator])
+            # 同步调用（新API：基于filters）
+            filters = {field: value}
+            result = self.client.search_handles_by_filters_sync(filters)
             
             return {"success": True, "count": len(result), "results": result}
             
