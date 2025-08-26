@@ -57,6 +57,13 @@ class SpatialFabricGradioUI:
         self._nest_asyncio_applied: bool = True  # 顶部已尝试应用
     
     # ---------------------- 内部辅助方法（不改变核心业务逻辑） ----------------------
+    # 统一错误消息常量
+    _ERR_NOT_INITIALIZED = "客户端未初始化，请先初始化客户端"
+    _ERR_ENTER_ID = "请输入数据ID"
+    _ERR_ENTER_HANDLE = "请输入Handle ID"
+    _ERR_ENTER_TAGS = "请输入标签"
+    _ERR_ENTER_FIELD_VALUE = "请输入搜索字段和值"
+
     def _apply_handle_ssl_env(self) -> None:
         """为Handle相关操作应用SSL修复和必要环境变量。"""
         try:
@@ -73,7 +80,7 @@ class SpatialFabricGradioUI:
     def _ensure_initialized(self) -> Optional[Dict[str, Any]]:
         """统一的初始化校验，未初始化则返回错误结构。"""
         if not self.initialized or not self.client:
-            return {"error": "客户端未初始化，请先初始化客户端"}
+            return {"error": self._ERR_NOT_INITIALIZED}
         return None
     
     def _apply_nest_asyncio_once(self) -> None:
@@ -553,7 +560,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not handle_id:
-                return self._error("请输入Handle ID")
+                return self._error(self._ERR_ENTER_HANDLE)
             
             # 同步调用
             result = self.client.parse_spatial_handle_sync(handle_id)
@@ -571,7 +578,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not field or not value:
-                return self._error("请输入搜索字段和值")
+                return self._error(self._ERR_ENTER_FIELD_VALUE)
             
             # 同步调用
             result = self.client.search_handles_sync([field], [value], [operator])
@@ -692,7 +699,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return self._error("请输入数据ID")
+                return self._error(self._ERR_ENTER_ID)
             
             # 同步调用
             result = self.client.get_spatial_data_sync(data_id)
@@ -722,7 +729,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return self._error("请输入数据ID")
+                return self._error(self._ERR_ENTER_ID)
             
             # 同步调用
             result = self.client.get_spatial_data_sync(data_id)
@@ -752,7 +759,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return self._error("请输入数据ID")
+                return self._error(self._ERR_ENTER_ID)
             
             # 创建更新的元数据
             metadata = SpatialMetadata(
@@ -815,7 +822,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not tags:
-                return self._error("请输入标签")
+                return self._error(self._ERR_ENTER_TAGS)
             
             tag_list = self._split_tags(tags)
             
