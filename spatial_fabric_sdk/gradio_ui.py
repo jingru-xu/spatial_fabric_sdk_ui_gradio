@@ -483,7 +483,7 @@ class SpatialFabricGradioUI:
                 "❌ 重置客户端状态失败"
             )
     
-    def _register_handle(self, handle_id, target_url, name, description, tags, data_type, is_spatial, is_temporal):
+    def _register_handle(self, handle_id: str, target_url: str, name: str, description: str, tags: str, data_type: str, is_spatial: bool, is_temporal: bool) -> Dict[str, Any]:
         """注册Handle"""
         try:
             not_ready = self._ensure_initialized()
@@ -545,7 +545,7 @@ class SpatialFabricGradioUI:
             else:
                 return {"error": f"注册失败: {error_msg}"}
     
-    def _parse_handle(self, handle_id):
+    def _parse_handle(self, handle_id: str) -> Dict[str, Any]:
         """解析Handle"""
         try:
             not_ready = self._ensure_initialized()
@@ -563,7 +563,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"解析失败: {str(e)}"}
     
-    def _search_handles(self, field, value, operator):
+    def _search_handles(self, field: str, value: str, operator: str) -> Dict[str, Any]:
         """搜索Handle"""
         try:
             not_ready = self._ensure_initialized()
@@ -586,7 +586,7 @@ class SpatialFabricGradioUI:
                 error_msg += " (请检查网络连接)"
             return {"error": f"搜索失败: {error_msg}"}
     
-    def _create_spatial_data(self, name, description, tags, data_type, min_lat, max_lat, min_lon, max_lon, crs, data_url):
+    def _create_spatial_data(self, name: str, description: str, tags: str, data_type: str, min_lat: float, max_lat: float, min_lon: float, max_lon: float, crs: str, data_url: str) -> Dict[str, Any]:
         """创建空间数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -684,7 +684,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"创建失败: {str(e)}"}
     
-    def _read_spatial_data(self, data_id):
+    def _read_spatial_data(self, data_id: str) -> Dict[str, Any]:
         """读取空间数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -714,7 +714,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"读取失败: {str(e)}"}
     
-    def _find_data_for_update(self, data_id):
+    def _find_data_for_update(self, data_id: str) -> Dict[str, Any]:
         """查找要更新的数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -744,7 +744,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"查找失败: {str(e)}"}
     
-    def _update_spatial_data(self, data_id, name, description, tags, data_type, min_lat, max_lat, min_lon, max_lon, crs, data_url):
+    def _update_spatial_data(self, data_id: str, name: str, description: str, tags: str, data_type: str, min_lat: float, max_lat: float, min_lon: float, max_lon: float, crs: str, data_url: str) -> Dict[str, Any]:
         """更新空间数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -758,7 +758,7 @@ class SpatialFabricGradioUI:
             metadata = SpatialMetadata(
                 name=name,
                 description=description,
-                tags=[tag.strip() for tag in tags.split(",") if tag.strip()],
+                tags=self._split_tags(tags),
                 type=data_type,
                 is_spatial=True,
                 is_temporal=False
@@ -789,7 +789,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"更新失败: {str(e)}"}
     
-    def _delete_spatial_data(self, data_id):
+    def _delete_spatial_data(self, data_id: str) -> Dict[str, Any]:
         """删除空间数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -797,7 +797,7 @@ class SpatialFabricGradioUI:
                 return not_ready
             
             if not data_id:
-                return {"error": "请输入数据ID"}
+                return self._error("请输入数据ID")
             
             # 同步调用
             result = self.client.delete_spatial_data_sync(data_id)
@@ -807,7 +807,7 @@ class SpatialFabricGradioUI:
         except Exception as e:
             return {"error": f"删除失败: {str(e)}"}
     
-    def _search_by_tags(self, tags):
+    def _search_by_tags(self, tags: str) -> Dict[str, Any]:
         """根据标签搜索数据"""
         try:
             not_ready = self._ensure_initialized()
@@ -832,7 +832,7 @@ class SpatialFabricGradioUI:
                 error_msg += " (请检查网络连接和Gard服务状态)"
             return {"error": f"搜索失败: {error_msg}"}
     
-    def _advanced_search(self, tags, keywords, data_type, min_lat, max_lat, min_lon, max_lon):
+    def _advanced_search(self, tags: str, keywords: str, data_type: str, min_lat, max_lat, min_lon, max_lon):
         """高级搜索"""
         try:
             not_ready = self._ensure_initialized()
