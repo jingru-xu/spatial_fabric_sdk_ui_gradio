@@ -17,7 +17,8 @@ apply_handle_sdk_ssl_fix()
 
 # 导入封装的SDK，添加错误处理
 try:
-    from handle_sdk import register_handle, parse_handle
+    # Integrate local handle_sdk implementation directly (no fallbacks)
+    from handle_sdk.handle_sdk import register_handle, parse_handle
     HANDLE_SDK_AVAILABLE = True
     print("✅ Handle SDK 导入成功")
         
