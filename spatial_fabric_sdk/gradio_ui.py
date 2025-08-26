@@ -18,7 +18,7 @@ os.environ['HANDLE_TLS_INSECURE'] = 'true'  # 禁用Handle SDK的SSL验证
 os.environ['PYTHONHTTPSVERIFY'] = '0'       # 禁用Python的HTTPS验证
 
 import gradio as gr
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Tuple
 
 # 修复Gradio环境中的事件循环问题
 try:
@@ -366,7 +366,7 @@ class SpatialFabricGradioUI:
         """创建数据查看标签页"""
         gr.Markdown("📋 数据查看功能正在开发中...")
     
-    def _initialize_client(self, gard_url: str, handle_prefix: str):
+    def _initialize_client(self, gard_url: str, handle_prefix: str) -> Tuple[str, str]:
         """初始化客户端"""
         try:
             # 在初始化客户端前，重新应用证书设置
@@ -448,7 +448,7 @@ class SpatialFabricGradioUI:
             self.initialized = False
             return f"❌ 创建客户端失败: {str(e)}", "❌ 客户端初始化失败"
     
-    def _reset_client(self):
+    def _reset_client(self) -> Tuple[str, str]:
         """重置客户端状态，解决协程重用问题"""
         try:
             if self.client:
